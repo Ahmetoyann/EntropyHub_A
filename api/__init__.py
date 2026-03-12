@@ -1,0 +1,1 @@
+"""EntropyHub FastAPI package."""

@@ -1,7 +1,7 @@
-# Aether v1.0 – requirements.txt 
+# EntropyHub v1.0 – requirements.txt 
 numpy==1.26.4
 matplotlib==3.8.2
-scipy==1.13.0
+
 requests==2.32.3
 tqdm==4.66.5
 plotly==5.24.0
@@ -11,6 +11,11 @@ kaleido==0.2.1
 fastapi==0.115.5
 uvicorn==0.34.0
 pydantic==2.10.3
+prometheus-client==0.21.1
+
+# Real Post-Quantum Crypto
+pqcrypto>=0.4.0
+oqs>=0.10.0
 
 # Testing & Benchmarking
 pytest==8.3.4

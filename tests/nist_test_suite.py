@@ -1,7 +1,7 @@
 # tests/nist_test_suite.py
 """
 NIST SP 800-22 Statistical Test Suite Implementation
-Tests for randomness quality of the Aether PRNG
+Tests for randomness quality of the EntropyHub PRNG
 """
 
 import numpy as np
@@ -272,7 +272,7 @@ class NISTTestSuite:
         """Run all NIST tests"""
         print(f"\n{'='*80}")
         print(f"NIST SP 800-22 Statistical Test Suite")
-        print(f"Testing {num_bits} bits from Aether PRNG")
+        print(f"Testing {num_bits} bits from EntropyHub PRNG")
         print(f"{'='*80}\n")
         
         bitstring = self.generate_bitstring(num_bits)

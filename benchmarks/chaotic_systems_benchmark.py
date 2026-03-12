@@ -517,21 +517,6 @@ class BenchmarkSuite:
         else:
             entropy = 0.0
         passed = (freq_p > 0.01) and (runs_p > 0.01)
-        print(f"        ✓ Frequency test: p={freq_p:.6f} {'PASS' if freq_p > 0.01 else 'FAIL'}")
-        print(f"        ✓ Runs test: p={runs_p:.6f} {'PASS' if runs_p > 0.01 else 'FAIL'}")
-        
-        # 4. Lyapunov exponent
-        print("  [4/5] Calculating Lyapunov exponent...")
-        try:
-            lyap = self.calculate_lyapunov(system)
-            print(f"        ✓ Lyapunov: {lyap:.4f}")
-        except:
-            lyap = 0.0
-            print(f"        ✗ Could not calculate")
-        
-        # 5. Entropy
-        print("  [5/5] Calculating Shannon entropy...")
-        entropy = self.calculate_entropy(bytes_data)
         print(f"        ✓ Entropy: {entropy:.4f} bits (max: 8.0)")
         
         return BenchmarkResult(

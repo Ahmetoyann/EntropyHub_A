@@ -1,6 +1,6 @@
-# benchmarks/aether_visualization.py
+# benchmarks/entropyhub_visualization.py
 """
-Aether PRNG System - Visualization & Argumentation Suite
+EntropyHub PRNG System - Visualization & Argumentation Suite
 Generate publication-quality figures and defense arguments
 """
 
@@ -15,8 +15,8 @@ import seaborn as sns
 plt.style.use('seaborn-v0_8-darkgrid')
 sns.set_palette("husl")
 
-class AetherVisualizer:
-    """Generate visualizations and arguments for Aether system"""
+class EntropyHubVisualizer:
+    """Generate visualizations and arguments for EntropyHub system"""
     
     def __init__(self):
         self.results_file = os.path.join(os.path.dirname(__file__), 'benchmark_results.json')
@@ -32,7 +32,7 @@ class AetherVisualizer:
         
     def generate_all_figures(self):
         """Generate all publication figures"""
-        print("🎨 Generating Aether Visualization Suite...")
+        print("🎨 Generating EntropyHub Visualization Suite...")
         print("=" * 70)
         
         self.figure1_performance_comparison()
@@ -64,7 +64,7 @@ class AetherVisualizer:
         
         # Highlight Rössler
         rossler_idx = names.index('Rössler')
-        ax1.text(throughputs[rossler_idx] + 0.002, rossler_idx, '← AETHER', 
+        ax1.text(throughputs[rossler_idx] + 0.002, rossler_idx, '← EntropyHub', 
                 fontsize=11, fontweight='bold', va='center', color='#FF6B6B')
         
         # Latency
@@ -75,7 +75,7 @@ class AetherVisualizer:
         ax2.invert_xaxis()  # Lower is better
         
         # Highlight Rössler
-        ax2.text(latencies[rossler_idx] - 20, rossler_idx, 'AETHER →', 
+        ax2.text(latencies[rossler_idx] - 20, rossler_idx, 'EntropyHub →', 
                 fontsize=11, fontweight='bold', va='center', ha='right', color='#FF6B6B')
         
         plt.tight_layout()
@@ -193,7 +193,7 @@ class AetherVisualizer:
         
         fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(projection='polar'))
         
-        ax.plot(angles, rossler_values, 'o-', linewidth=2, label='Rössler (AETHER)', color='#FF6B6B')
+        ax.plot(angles, rossler_values, 'o-', linewidth=2, label='Rössler (EntropyHub)', color='#FF6B6B')
         ax.fill(angles, rossler_values, alpha=0.25, color='#FF6B6B')
         
         ax.plot(angles, lorenz_values, 'o-', linewidth=2, label='Lorenz (Best Overall)', color='#4ECDC4')
@@ -206,7 +206,7 @@ class AetherVisualizer:
         ax.set_yticklabels(['0.2', '0.4', '0.6', '0.8', '1.0'], size=10)
         ax.grid(True, linestyle='--', alpha=0.7)
         
-        ax.set_title('Aether (Rössler) vs Best System (Lorenz)\nNormalized Performance Metrics',
+        ax.set_title('EntropyHub (Rössler) vs Best System (Lorenz)\nNormalized Performance Metrics',
                      size=16, fontweight='bold', pad=20)
         ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize=12)
         
@@ -223,7 +223,7 @@ class AetherVisualizer:
         ax.axis('off')
         
         # Title
-        fig.text(0.5, 0.95, 'Why Rössler for AETHER?', 
+        fig.text(0.5, 0.95, 'Why Rössler for EntropyHub?', 
                 ha='center', fontsize=24, fontweight='bold', color='#2C3E50')
         
         # Advantages
@@ -258,7 +258,7 @@ class AetherVisualizer:
             y_pos -= 0.11
         
         # Footer
-        fig.text(0.5, 0.02, 'Aether v2.1 - Quantum-Seeded Hyperchaotic PRNG', 
+        fig.text(0.5, 0.02, 'EntropyHub v2.1 - Quantum-Seeded Hyperchaotic PRNG', 
                 ha='center', fontsize=10, style='italic', color='#7F8C8D')
         
         filepath = os.path.join(self.output_dir, 'figure4_rossler_advantages.png')
@@ -305,7 +305,7 @@ class AetherVisualizer:
                            fill=False, edgecolor='#FF6B6B', linewidth=4)
         ax.add_patch(rect)
         
-        ax.set_title('NIST SP 800-22 Compliance Matrix\n(All Aether Systems Pass)', 
+        ax.set_title('NIST SP 800-22 Compliance Matrix\n(All EntropyHub Systems Pass)', 
                     fontsize=16, fontweight='bold', pad=20)
         
         # Add colorbar
@@ -320,7 +320,7 @@ class AetherVisualizer:
         plt.close()
         
     def figure6_system_architecture(self):
-        """Figure 6: Aether System Architecture Diagram"""
+        """Figure 6: EntropyHub System Architecture Diagram"""
         print("[6/6] System Architecture...")
         
         fig, ax = plt.subplots(figsize=(14, 10))
@@ -329,7 +329,7 @@ class AetherVisualizer:
         ax.axis('off')
         
         # Title
-        ax.text(5, 9.5, 'AETHER v2.1 Architecture', 
+        ax.text(5, 9.5, 'EntropyHub v2.1 Architecture', 
                ha='center', fontsize=22, fontweight='bold', color='#2C3E50')
         
         # Component boxes
@@ -390,12 +390,12 @@ class AetherVisualizer:
 
 
 if __name__ == "__main__":
-    print("\n🎨 AETHER VISUALIZATION SUITE")
+    print("\n🎨 ENTROPYHUB VISUALIZATION SUITE")
     print("=" * 70)
     print("Generating publication-quality figures and arguments...")
     print()
     
-    visualizer = AetherVisualizer()
+    visualizer = EntropyHubVisualizer()
     visualizer.generate_all_figures()
     
     print("\n" + "=" * 70)

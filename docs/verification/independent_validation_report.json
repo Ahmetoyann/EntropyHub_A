@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-03-04 21:39:27",
+  "python_version": "3.13.12 (tags/v3.13.12:1cbe481, Feb  3 2026, 18:22:25) [MSC v.1944 64 bit (AMD64)]",
+  "rust_core_available": true,
+  "core_type": "EntropyHubCore",
+  "sample_bytes": 200000,
+  "entropy_bits_per_byte": 7.999106486088003,
+  "monobit_p_value": 0.7303287413044728,
+  "chi_square_p_value": 0.6078588575790456,
+  "lag1_autocorr": 0.0011055521748895582,
+  "kem_trials": 200,
+  "kem_success_rate": 1.0,
+  "status": "PASS"
+}

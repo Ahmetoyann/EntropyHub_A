@@ -1,6 +1,6 @@
 # benchmarks/comprehensive_benchmark.py
 """
-Comprehensive Benchmark Suite for Aether PRNG
+Comprehensive Benchmark Suite for EntropyHub PRNG
 Compares performance, entropy quality, and statistical properties
 """
 
@@ -18,11 +18,19 @@ from core.chaos.nihde import NIHDE
 
 
 class ComprehensiveBenchmark:
-    """Complete benchmark suite for Aether PRNG"""
+    """Complete benchmark suite for EntropyHub PRNG"""
     
     def __init__(self):
         self.results = defaultdict(dict)
         self.engine = NIHDE()
+        self.repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.docs_figures_dir = os.path.join(self.repo_root, "docs", "figures")
+        self.docs_benchmarks_dir = os.path.join(self.repo_root, "docs", "benchmarks")
+        os.makedirs(self.docs_figures_dir, exist_ok=True)
+        os.makedirs(self.docs_benchmarks_dir, exist_ok=True)
+
+    def _figure_path(self, filename: str) -> str:
+        return os.path.join(self.docs_figures_dir, filename)
         
     def benchmark_latency(self, iterations=100000):
         """Measure per-byte generation latency"""
@@ -213,11 +221,11 @@ class ComprehensiveBenchmark:
         print(f"COMPARISON BENCHMARK - {iterations:,} iterations")
         print(f"{'='*80}")
         
-        # Aether PRNG
+        # EntropyHub PRNG
         start = time.perf_counter()
         for _ in range(iterations):
             self.engine.decide()
-        aether_time = time.perf_counter() - start
+        entropyhub_time = time.perf_counter() - start
         
         # os.urandom
         start = time.perf_counter()
@@ -232,11 +240,11 @@ class ComprehensiveBenchmark:
         numpy_time = time.perf_counter() - start
         
         results = {
-            'aether': {
-                'total_time': aether_time,
-                'per_byte_us': (aether_time / iterations) * 1_000_000,
-                'speedup_vs_urandom': urandom_time / aether_time,
-                'speedup_vs_numpy': numpy_time / aether_time
+            'entropyhub': {
+                'total_time': entropyhub_time,
+                'per_byte_us': (entropyhub_time / iterations) * 1_000_000,
+                'speedup_vs_urandom': urandom_time / entropyhub_time,
+                'speedup_vs_numpy': numpy_time / entropyhub_time
             },
             'urandom': {
                 'total_time': urandom_time,
@@ -249,19 +257,19 @@ class ComprehensiveBenchmark:
         }
         
         print(f"\nResults:")
-        print(f"  Aether PRNG:")
-        print(f"    Total time:        {results['aether']['total_time']:.4f} s")
-        print(f"    Per-byte latency:  {results['aether']['per_byte_us']:.3f} µs")
+        print(f"  EntropyHub PRNG:")
+        print(f"    Total time:        {results['entropyhub']['total_time']:.4f} s")
+        print(f"    Per-byte latency:  {results['entropyhub']['per_byte_us']:.3f} µs")
         print(f"  ")
         print(f"  os.urandom:")
         print(f"    Total time:        {results['urandom']['total_time']:.4f} s")
         print(f"    Per-byte latency:  {results['urandom']['per_byte_us']:.3f} µs")
-        print(f"    Speedup:           {results['aether']['speedup_vs_urandom']:.2f}x")
+        print(f"    Speedup:           {results['entropyhub']['speedup_vs_urandom']:.2f}x")
         print(f"  ")
         print(f"  numpy.random:")
         print(f"    Total time:        {results['numpy']['total_time']:.4f} s")
         print(f"    Per-byte latency:  {results['numpy']['per_byte_us']:.3f} µs")
-        print(f"    Speedup:           {results['aether']['speedup_vs_numpy']:.2f}x")
+        print(f"    Speedup:           {results['entropyhub']['speedup_vs_numpy']:.2f}x")
         
         self.results['comparison'] = results
         self._plot_comparison(results)
@@ -271,7 +279,7 @@ class ComprehensiveBenchmark:
     def run_all_benchmarks(self):
         """Run complete benchmark suite"""
         print(f"\n{'#'*80}")
-        print(f"#  AETHER PRNG - COMPREHENSIVE BENCHMARK SUITE")
+        print(f"#  ENTROPYHUB PRNG - COMPREHENSIVE BENCHMARK SUITE")
         print(f"#  Version: 2.1.0")
         print(f"#  Engine: Rust-optimized Rössler chaotic core")
         print(f"{'#'*80}")
@@ -298,10 +306,10 @@ class ComprehensiveBenchmark:
         plt.hist(latencies, bins=100, color='#00ffff', alpha=0.7, edgecolor='black')
         plt.xlabel('Latency (µs)', fontsize=12)
         plt.ylabel('Frequency', fontsize=12)
-        plt.title('Aether PRNG - Latency Distribution', fontsize=14, fontweight='bold')
+        plt.title('EntropyHub PRNG - Latency Distribution', fontsize=14, fontweight='bold')
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig('docs/figures/latency_distribution.png', dpi=300, bbox_inches='tight')
+        plt.savefig(self._figure_path('latency_distribution.png'), dpi=300, bbox_inches='tight')
         plt.close()
     
     def _plot_byte_distribution(self, byte_counts):
@@ -311,11 +319,11 @@ class ComprehensiveBenchmark:
         plt.axhline(y=np.mean(byte_counts), color='red', linestyle='--', label='Expected (uniform)')
         plt.xlabel('Byte Value (0-255)', fontsize=12)
         plt.ylabel('Frequency', fontsize=12)
-        plt.title('Aether PRNG - Byte Distribution', fontsize=14, fontweight='bold')
+        plt.title('EntropyHub PRNG - Byte Distribution', fontsize=14, fontweight='bold')
         plt.legend()
         plt.grid(True, alpha=0.3, axis='y')
         plt.tight_layout()
-        plt.savefig('docs/figures/byte_distribution.png', dpi=300, bbox_inches='tight')
+        plt.savefig(self._figure_path('byte_distribution.png'), dpi=300, bbox_inches='tight')
         plt.close()
     
     def _plot_autocorrelation(self, autocorr):
@@ -327,18 +335,18 @@ class ComprehensiveBenchmark:
         plt.axhline(y=-0.1, color='red', linestyle='--', alpha=0.5)
         plt.xlabel('Lag', fontsize=12)
         plt.ylabel('Autocorrelation', fontsize=12)
-        plt.title('Aether PRNG - Autocorrelation Function', fontsize=14, fontweight='bold')
+        plt.title('EntropyHub PRNG - Autocorrelation Function', fontsize=14, fontweight='bold')
         plt.legend()
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig('docs/figures/autocorrelation.png', dpi=300, bbox_inches='tight')
+        plt.savefig(self._figure_path('autocorrelation.png'), dpi=300, bbox_inches='tight')
         plt.close()
     
     def _plot_comparison(self, results):
         """Plot performance comparison"""
-        generators = ['Aether', 'os.urandom', 'numpy.random']
+        generators = ['EntropyHub', 'os.urandom', 'numpy.random']
         latencies = [
-            results['aether']['per_byte_us'],
+            results['entropyhub']['per_byte_us'],
             results['urandom']['per_byte_us'],
             results['numpy']['per_byte_us']
         ]
@@ -358,12 +366,12 @@ class ComprehensiveBenchmark:
                     ha='center', va='bottom', fontsize=11, fontweight='bold')
         
         plt.tight_layout()
-        plt.savefig('docs/figures/performance_comparison.png', dpi=300, bbox_inches='tight')
+        plt.savefig(self._figure_path('performance_comparison.png'), dpi=300, bbox_inches='tight')
         plt.close()
     
     def _generate_summary_report(self):
         """Generate markdown summary report"""
-        report = f"""# Aether PRNG - Benchmark Report
+        report = f"""# EntropyHub PRNG - Benchmark Report
 
 ## Summary
 
@@ -393,28 +401,28 @@ class ComprehensiveBenchmark:
 - **Mean Abs Correlation:** {self.results['correlation']['mean_abs_correlation']:.6f}
 
 ### Comparison
-- **vs os.urandom:** {self.results['comparison']['aether']['speedup_vs_urandom']:.2f}x faster
-- **vs numpy.random:** {self.results['comparison']['aether']['speedup_vs_numpy']:.2f}x faster
+- **vs os.urandom:** {self.results['comparison']['entropyhub']['speedup_vs_urandom']:.2f}x faster
+- **vs numpy.random:** {self.results['comparison']['entropyhub']['speedup_vs_numpy']:.2f}x faster
 
 ---
 
 ## Visualizations
 
-![Latency Distribution](figures/latency_distribution.png)
-![Byte Distribution](figures/byte_distribution.png)
-![Autocorrelation](figures/autocorrelation.png)
-![Performance Comparison](figures/performance_comparison.png)
+![Latency Distribution](../figures/latency_distribution.png)
+![Byte Distribution](../figures/byte_distribution.png)
+![Autocorrelation](../figures/autocorrelation.png)
+![Performance Comparison](../figures/performance_comparison.png)
 
 ---
 
-**Generated by Aether Comprehensive Benchmark Suite**
+**Generated by EntropyHub Comprehensive Benchmark Suite**
 """
         
-        os.makedirs('docs/benchmarks', exist_ok=True)
-        with open('docs/benchmarks/comprehensive_report.md', 'w') as f:
+        report_path = os.path.join(self.docs_benchmarks_dir, 'comprehensive_report.md')
+        with open(report_path, 'w', encoding='utf-8') as f:
             f.write(report)
         
-        print(f"\n📊 Summary report saved to: docs/benchmarks/comprehensive_report.md")
+        print(f"\n📊 Summary report saved to: {report_path}")
 
 
 if __name__ == "__main__":

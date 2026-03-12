@@ -6,7 +6,7 @@ use sha2::{Digest, Sha256};
 
 // Chaotic System State and Parameters
 #[pyclass]
-pub struct AetherCore {
+pub struct EntropyHubCore {
     #[pyo3(get, set)]
     pub x: f64,
     #[pyo3(get, set)]
@@ -22,10 +22,10 @@ pub struct AetherCore {
 }
 
 #[pymethods]
-impl AetherCore {
+impl EntropyHubCore {
     #[new]
     fn new(x: f64, y: f64, z: f64, a: f64, b: f64, c: f64, dt: f64) -> Self {
-        AetherCore { x, y, z, a, b, c, dt }
+        EntropyHubCore { x, y, z, a, b, c, dt }
     }
 
     /// Executes one iteration step of the numerical integration (Rössler System).
@@ -91,7 +91,7 @@ impl AetherCore {
 
 // Python module definition
 #[pymodule]
-fn aether_core_rs(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<AetherCore>()?;
+fn entropyhub_core_rs(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_class::<EntropyHubCore>()?;
     Ok(())
 }

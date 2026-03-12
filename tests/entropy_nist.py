@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 from core.chaos.nihde import NIHDE
 
-print("Aether – Generating 1,000,000 bits for randomness validation...")
+print("EntropyHub – Generating 1,000,000 bits for randomness validation...")
 engine = NIHDE(use_live_qrng=True)
 
 bits = np.unpackbits(np.array([engine.decide() for _ in range(125_000)], dtype=np.uint8))

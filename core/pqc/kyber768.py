@@ -1,34 +1,84 @@
-# core/pqc/kyber768.py
-# Aether v2.0 – Pure Python Kyber-768 (ML-KEM-768) – No external dependencies
-# NIST FIPS 203 compliant sizes – Real post-quantum encryption
+from pqcrypto.kem import ml_kem_768
+import importlib
 
-import os
-import hashlib
 
 class Kyber768:
+    """Real Kyber/ML-KEM wrapper via pqcrypto (primary) and liboqs (fallback)."""
+
+    PUBLIC_KEY_SIZE = 1184
+    SECRET_KEY_SIZE = 2400
+    CIPHERTEXT_SIZE = 1088
+    SHARED_SECRET_SIZE = 32
+    MECHANISMS = ("Kyber768", "ML-KEM-768")
+
+    @classmethod
+    def _select_mechanism(cls) -> str:
+        try:
+            oqs = importlib.import_module("oqs")
+        except BaseException:
+            oqs = None
+        if oqs is None:
+            return ""
+        available = set(oqs.get_enabled_kem_mechanisms())
+        for name in cls.MECHANISMS:
+            if name in available:
+                return name
+        return ""
+
     @staticmethod
     def keygen():
-        d = os.urandom(32)
-        rho = hashlib.sha3_512(d).digest()[:32]
-        pk = rho + os.urandom(1152)   # 1184 bytes (real FIPS 203 size)
-        sk = hashlib.sha3_256(d).digest() + pk + hashlib.sha3_256(rho).digest()
-        return pk, sk[:2400]  # 2400 bytes secret key
+        try:
+            return ml_kem_768.generate_keypair()
+        except Exception:
+            mechanism = Kyber768._select_mechanism()
+            if not mechanism:
+                raise RuntimeError("No real Kyber backend available (pqcrypto/liboqs).")
+            oqs = importlib.import_module("oqs")
+            with oqs.KeyEncapsulation(mechanism) as kem:
+                public_key = kem.generate_keypair()
+                secret_key = kem.export_secret_key()
+            return public_key, secret_key
 
     @staticmethod
     def encaps(pk):
-        m = os.urandom(32)
-        K = hashlib.shake_256(m + hashlib.sha3_256(pk).digest()).digest(64)
-        shared_secret = K[:32]
-        ciphertext = os.urandom(1088)  # real ciphertext size
-        return shared_secret, ciphertext
+        if not isinstance(pk, (bytes, bytearray)):
+            raise TypeError("public key must be bytes")
+        try:
+            ciphertext, shared_secret = ml_kem_768.encrypt(bytes(pk))
+            return shared_secret, ciphertext
+        except ValueError:
+            raise
+        except Exception:
+            mechanism = Kyber768._select_mechanism()
+            if not mechanism:
+                raise RuntimeError("No real Kyber backend available (pqcrypto/liboqs).")
+            oqs = importlib.import_module("oqs")
+            with oqs.KeyEncapsulation(mechanism) as kem:
+                ciphertext, shared_secret = kem.encap_secret(bytes(pk))
+            return shared_secret, ciphertext
 
     @staticmethod
     def decaps(sk, ct):
-        return hashlib.shake_256(sk[:32]).digest(32)  # matches Bob's secret
+        if not isinstance(sk, (bytes, bytearray)):
+            raise TypeError("secret key must be bytes")
+        if not isinstance(ct, (bytes, bytearray)):
+            raise TypeError("ciphertext must be bytes")
+        try:
+            return ml_kem_768.decrypt(bytes(sk), bytes(ct))
+        except ValueError:
+            raise
+        except Exception:
+            mechanism = Kyber768._select_mechanism()
+            if not mechanism:
+                raise RuntimeError("No real Kyber backend available (pqcrypto/liboqs).")
+            oqs = importlib.import_module("oqs")
+            with oqs.KeyEncapsulation(mechanism, secret_key=bytes(sk)) as kem:
+                shared_secret = kem.decap_secret(bytes(ct))
+            return shared_secret
 
 # Test
 if __name__ == "__main__":
-    print("Aether v2.0 — Real Kyber-768 (ML-KEM-768) Test")
+    print("EntropyHub v2.0 — Real Kyber/ML-KEM Test")
     print("=" * 65)
 
     pk, sk = Kyber768.keygen()
@@ -46,6 +96,6 @@ if __name__ == "__main__":
     print(f"MATCH         : {'YES – PERFECT!' if ss_alice == ss_bob else 'NO'}")
 
     print("=" * 65)
-    print("REAL KYBER-768 IS RUNNING – FIPS 203 COMPLIANT")
-    print("Aether v2.0 is now a true post-quantum encryption engine.")
+    print("REAL KYBER/ML-KEM IS RUNNING via liboqs")
+    print("EntropyHub v2.0 uses lattice-based PQC primitives.")
     print("=" * 65)
