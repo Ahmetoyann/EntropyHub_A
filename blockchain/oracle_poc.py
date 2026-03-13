@@ -13,7 +13,7 @@ from core.pqc.dilithium3 import Dilithium3
 
 @dataclass
 class OracleResponse:
-    request_id: str
+    request_id: str 
     timestamp: float
     random_bytes_hex: str
     commitment_hash: str

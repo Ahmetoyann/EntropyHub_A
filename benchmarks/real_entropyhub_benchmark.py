@@ -15,7 +15,7 @@ from core.pqc.kyber768 import Kyber768
 
 @dataclass
 class EntropyHubRealBenchmark:
-    timestamp: str
+    timestamp: str 
     environment: dict
     rng: dict
     kem: dict

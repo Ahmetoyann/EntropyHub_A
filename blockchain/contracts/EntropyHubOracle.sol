@@ -8,7 +8,7 @@ contract EntropyHubOracle {
         uint256 timestamp;
         bytes signature;
         bytes oraclePublicKey;
-    }
+    } 
 
     address public owner;
     mapping(bytes32 => OracleResult) public results;

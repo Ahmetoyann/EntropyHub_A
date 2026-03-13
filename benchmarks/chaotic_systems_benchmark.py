@@ -10,7 +10,7 @@ Academic Contribution:
 - Statistical quality metrics
 """
 
-import numpy as np
+import numpy as np 
 import time
 import sys
 import os

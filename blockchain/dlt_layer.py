@@ -15,7 +15,7 @@ from core.pqc.dilithium3 import Dilithium3
 @dataclass
 class Block:
     index: int
-    previous_hash: str
+    previous_hash: str 
     timestamp: float
     proposer: str
     entropy_byte: int

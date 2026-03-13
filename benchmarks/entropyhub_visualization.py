@@ -15,7 +15,7 @@ import seaborn as sns
 plt.style.use('seaborn-v0_8-darkgrid')
 sns.set_palette("husl")
 
-class EntropyHubVisualizer:
+class EntropyHubVisualizer: 
     """Generate visualizations and arguments for EntropyHub system"""
     
     def __init__(self):

@@ -11,13 +11,14 @@ from collections import Counter
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 from prometheus_client import CONTENT_TYPE_LATEST, Counter as PromCounter, Gauge, Histogram, generate_latest
 
 from core.chaos.nihde import NIHDE, RUST_CORE_AVAILABLE
 from core.pqc.kyber768 import Kyber768
 
-
+ 
 DEFAULT_DEMO_API_KEY = "teknofest-local-dev-key"
 
 
@@ -192,6 +193,15 @@ app = FastAPI(
 )
 app.state.rate_limiter = rate_limiter
 
+# React Frontend entegrasyonu için CORS ayarları
+# Bu ayar, tarayıcının localhost:3000'den localhost:8000'e istek atmasına izin verir.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Geliştirme ortamı için tüm kaynaklara izin veriyoruz
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.middleware("http")
 async def security_and_observability_middleware(request: Request, call_next):
@@ -205,7 +215,7 @@ async def security_and_observability_middleware(request: Request, call_next):
     ACTIVE_REQUESTS.inc()
 
     api_key = request.headers.get("x-api-key")
-    is_public = path in _public_paths()
+    is_public = path in _public_paths() or request.method == "OPTIONS"
 
     if not is_public:
         if not api_key or api_key not in configured_api_keys:
@@ -395,3 +405,13 @@ def kyber_decapsulate(request: KyberDecapsRequest):
         "shared_secret_size": len(shared_secret),
         "algorithm": "ML-KEM-768",
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    import sys
+    
+    # Proje kök dizinini Python yoluna ekle (core modülü için)
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
+    uvicorn.run(app, host="0.0.0.0", port=8000)

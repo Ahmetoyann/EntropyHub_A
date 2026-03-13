@@ -8,7 +8,7 @@ interface IEntropyHubOracle {
         returns (
             bytes memory randomBytes,
             bytes32 commitmentHash,
-            uint256 timestamp,
+            uint256 timestamp, 
             bytes memory signature,
             bytes memory oraclePublicKey
         );

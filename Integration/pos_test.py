@@ -56,7 +56,7 @@ if web3.is_connected():
         install_solc("0.8.0") # Downloads compiler on first run
         compiled_sol = compile_standard(
             {
-                "language": "Solidity",
+                "language": "Solidity", 
                 "sources": {"PoSValidatorSelector.sol": {"content": pos_contract_source}},
                 "settings": {"outputSelection": {"*": {"*": ["abi", "evm.bytecode"]}}},
             },

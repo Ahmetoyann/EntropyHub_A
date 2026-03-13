@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Tailwind CSS CDN - ACİL ÇÖZÜM -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Özel stiller -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        overflow-x: hidden;
+      }
+      
+      /* Glassmorphism efekti */
+      .glass-card {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        background-color: rgba(10, 25, 41, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      
+      /* 3D Canvas */
+      canvas {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 1.5rem;
+      }
+      
+      /* Animasyonlar */
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .animate-fade-in-down {
+        animation: fadeInDown 0.3s ease-out;
+      }
+      
+      .animate-fade-in-up {
+        animation: fadeInUp 0.3s ease-out;
+      }
+      
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+      }
+      
+      .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      
+      /* Renk değişkenleri */
+      :root {
+        --primary: #0A1929;
+        --accent: #00FFA3;
+      }
+      
+      /* Özel renk sınıfları (Tailwind yoksa diye) */
+      .bg-\[\#0A1929\] { background-color: #0A1929; }
+      .text-\[\#00FFA3\] { color: #00FFA3; }
+      .border-\[\#00FFA3\] { border-color: #00FFA3; }
+      .bg-\[\#00FFA3\] { background-color: #00FFA3; }
+      
+      /* Layout için grid düzenlemeleri */
+      .grid { display: grid; }
+      .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+      .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      
+      @media (min-width: 1024px) {
+        .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .lg\:col-span-1 { grid-column: span 1 / span 1; }
+        .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        .lg\:col-span-3 { grid-column: span 3 / span 3; }
+      }
+      
+      /* Boşluklar */
+      .gap-2 { gap: 0.5rem; }
+      .gap-4 { gap: 1rem; }
+      .gap-6 { gap: 1.5rem; }
+      
+      /* Padding */
+      .p-2 { padding: 0.5rem; }
+      .p-3 { padding: 0.75rem; }
+      .p-4 { padding: 1rem; }
+      .p-6 { padding: 1.5rem; }
+      .p-8 { padding: 2rem; }
+      .px-4 { padding-left: 1rem; padding-right: 1rem; }
+      .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .px-8 { padding-left: 2rem; padding-right: 2rem; }
+      .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+      .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+      .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+      .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+      
+      /* Margin */
+      .m-0 { margin: 0; }
+      .mx-auto { margin-left: auto; margin-right: auto; }
+      .mt-2 { margin-top: 0.5rem; }
+      .mt-4 { margin-top: 1rem; }
+      .mt-6 { margin-top: 1.5rem; }
+      .mt-8 { margin-top: 2rem; }
+      .mb-2 { margin-bottom: 0.5rem; }
+      .mb-3 { margin-bottom: 0.75rem; }
+      .mb-4 { margin-bottom: 1rem; }
+      .mb-6 { margin-bottom: 1.5rem; }
+      
+      /* Flex */
+      .flex { display: flex; }
+      .flex-col { flex-direction: column; }
+      .flex-row { flex-direction: row; }
+      .items-center { align-items: center; }
+      .justify-between { justify-content: space-between; }
+      .justify-center { justify-content: center; }
+      
+      /* Genişlik */
+      .w-full { width: 100%; }
+      .w-80 { width: 20rem; }
+      .min-h-screen { min-height: 100vh; }
+      
+      /* Metin */
+      .text-xs { font-size: 0.75rem; }
+      .text-sm { font-size: 0.875rem; }
+      .text-base { font-size: 1rem; }
+      .text-lg { font-size: 1.125rem; }
+      .text-xl { font-size: 1.25rem; }
+      .text-2xl { font-size: 1.5rem; }
+      .font-bold { font-weight: 700; }
+      .font-mono { font-family: monospace; }
+      .text-center { text-align: center; }
+      
+      /* Kenarlıklar */
+      .border { border-width: 1px; border-style: solid; }
+      .border-t { border-top-width: 1px; }
+      .border-b { border-bottom-width: 1px; }
+      .border-gray-700 { border-color: #374151; }
+      .border-white\/10 { border-color: rgba(255, 255, 255, 0.1); }
+      
+      /* Arkaplan */
+      .bg-opacity-10 { --tw-bg-opacity: 0.1; }
+      .bg-white { background-color: white; }
+      .bg-black { background-color: black; }
+      .bg-gray-50 { background-color: #F9FAFB; }
+      .bg-red-500 { background-color: #EF4444; }
+      
+      /* Renk */
+      .text-white { color: white; }
+      .text-gray-400 { color: #9CA3AF; }
+      .text-gray-500 { color: #6B7280; }
+      .text-yellow-500 { color: #F59E0B; }
+      .text-purple-400 { color: #C084FC; }
+      .text-blue-400 { color: #60A5FA; }
+      
+      /* Yuvarlak kenarlar */
+      .rounded { border-radius: 0.25rem; }
+      .rounded-lg { border-radius: 0.5rem; }
+      .rounded-xl { border-radius: 0.75rem; }
+      .rounded-2xl { border-radius: 1rem; }
+      .rounded-3xl { border-radius: 1.5rem; }
+      .rounded-full { border-radius: 9999px; }
+      
+      /* Gölge */
+      .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+      
+      /* Overflow */
+      .overflow-hidden { overflow: hidden; }
+      .relative { position: relative; } 
+      .absolute { position: absolute; }
+      .fixed { position: fixed; }
+      .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+      .top-4 { top: 1rem; }
+      .left-4 { left: 1rem; }
+      .right-4 { right: 1rem; }
+      .z-10 { z-index: 10; }
+       
+      /* Container */
+      .container {
+        width: 100%;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    </style>
+    
+    <title>EntropyHub</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
