@@ -32,7 +32,7 @@ const FadeIn = ({ children, delay = "0ms", className = "" }) => {
     <div
       ref={domRef}
       className={`transition-all duration-1000 ease-out transform ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+        isVisible ? "opacity-100 translate-y-0 blur-0" : "opacity-0 translate-y-12 blur-md"
       } ${className}`}
       style={{ transitionDelay: delay }}
     >
@@ -90,7 +90,7 @@ const InteractivePipelineDiagram = ({ entropyData, blockNumber, showToast }) => 
   const [extractedBits, setExtractedBits] = useState(["10110010", "00110101", "11001011"]);
   const [hexSeeds, setHexSeeds] = useState(["0x7F3A", "0x2B9C", "0xE54D"]);
   const [hashValue, setHashValue] = useState("a7ffc6f8bf1ed76651c14756a061...");
-  const [kyberKeys, setKyberKeys] = useState({ pub: "0x4A3F...B2C1", cipher: "0x8D7E...F4A2" });
+  const [kyberKeys, setKyberKeys] = useState({ pub: "0x4A3F...B2C1", cipher: "0x8D7E...F4A2" }); 
 
   // Değerleri her 1.5 saniyede bir hafifçe dalgalandıran animasyon efekti
   useEffect(() => {
@@ -167,7 +167,7 @@ const InteractivePipelineDiagram = ({ entropyData, blockNumber, showToast }) => 
             >
               Production Ready
             </button>
-          </div>
+          </div> 
         </div>
 
         {/* Main Pipeline Grid */}
@@ -392,10 +392,10 @@ export default function EntropyPipeline({ entropyData, blockNumber, showToast })
   ];
 
   return (
-    <div className="min-h-screen bg-[#050b14] text-slate-200 font-sans selection:bg-[#00FFA3]/30 py-20 px-4 md:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-transparent text-slate-200 font-sans selection:bg-[#00FFA3]/30 py-20 px-4 md:px-8 relative overflow-hidden">
       
       {/* Arkaplan Ortam Işıkları (Ambient Lighting) */}
-      <div className="fixed inset-0 pointer-events-none z-0">
+      <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#00FFA3]/5 rounded-full blur-[150px]" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-900/10 rounded-full blur-[150px]" />
       </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserProvider, Contract } from 'ethers';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -83,38 +82,29 @@ const ChartIcon = ({ size = 24, className }) => (
 function RosslerGraph({ animate, entropyData, isDarkMode }) {
   const lineRef = React.useRef();
   const pointsRef = React.useRef([]);
-  const stateRef = React.useRef({ x: 0.1, y: 0.1, z: 0.1 }); // Başlangıç noktası
+  const stateRef = React.useRef({ x: 0.1, y: 0.1, z: 0.1 });
   const [lineColor, setLineColor] = React.useState(isDarkMode ? '#00FFA3' : '#0A1929'); 
 
-  // Rössler Parametreleri (Mutable Ref olarak tutuyoruz)
   const paramsRef = React.useRef({ a: 0.2, b: 0.2, c: 5.7 });
   const dt = 0.03;
 
-  // Entropi verisi değiştiğinde parametreleri güncelle
   React.useEffect(() => {
     if (entropyData && entropyData.length >= 3) {
-      // Byte verilerini (0-255) Rössler parametre aralıklarına eşle
-      paramsRef.current.a = 0.15 + (entropyData[0] / 255) * 0.1; // 0.15 - 0.25
-      paramsRef.current.b = 0.15 + (entropyData[1] / 255) * 0.1; // 0.15 - 0.25
-      paramsRef.current.c = 4.0 + (entropyData[2] / 255) * 6.0;  // 4.0 - 10.0
+      paramsRef.current.a = 0.15 + (entropyData[0] / 255) * 0.1;
+      paramsRef.current.b = 0.15 + (entropyData[1] / 255) * 0.1;
+      paramsRef.current.c = 4.0 + (entropyData[2] / 255) * 6.0;
 
       let newColor;
       if (isDarkMode) {
-        // Koyu mod için parlak/neon renkler (Mevcut mantık)
         newColor = `rgb(${entropyData[0]}, ${Math.min(255, entropyData[1] + 100)}, ${entropyData[2]})`;
       } else {
-        // Açık mod için daha koyu/kontrast renkler (Dark Blue/Purple tonları)
-        // Değerleri 0.6 ile çarparak koyulaştırıyoruz
         newColor = `rgb(${Math.floor(entropyData[0] * 0.6)}, ${Math.floor(entropyData[1] * 0.4)}, ${Math.floor(entropyData[2] * 0.6)})`;
       }
       setLineColor(newColor);
 
-      // Görseli temizle (yeni kaotik duruma geçiş)
       pointsRef.current = [];
       stateRef.current = { x: 0.1, y: 0.1, z: 0.1 };
-    }
-    // Tema değiştiğinde varsayılan rengi güncelle (veri yoksa)
-    else {
+    } else {
       setLineColor(isDarkMode ? '#00FFA3' : '#0A1929');
     }
   }, [entropyData, isDarkMode]);
@@ -122,13 +112,11 @@ function RosslerGraph({ animate, entropyData, isDarkMode }) {
   useFrame(() => {
     if (!lineRef.current) return;
     
-    // Veri üretilirken (loading=true) simülasyonu hızlandır
     const iterations = animate ? 20 : 5;
     let { x, y, z } = stateRef.current;
     const { a, b, c } = paramsRef.current;
 
     for (let i = 0; i < iterations; i++) {
-      // Rössler Diferansiyel Denklemleri
       const dx = (-y - z) * dt;
       const dy = (x + a * y) * dt;
       const dz = (b + z * (x - c)) * dt;
@@ -139,19 +127,16 @@ function RosslerGraph({ animate, entropyData, isDarkMode }) {
 
       pointsRef.current.push(x, y, z);
       
-      // Performans için nokta sayısını sınırla (Örn: 9000 koordinat = 3000 nokta)
       if (pointsRef.current.length > 9000) {
         pointsRef.current.splice(0, 3);
       }
     }
     stateRef.current = { x, y, z };
 
-    // Geometriyi güncelle
     const positions = new Float32Array(pointsRef.current);
     lineRef.current.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     lineRef.current.geometry.attributes.position.needsUpdate = true;
     
-    // Yavaşça kendi ekseninde dön
     lineRef.current.rotation.z += 0.002;
   });
 
@@ -163,8 +148,90 @@ function RosslerGraph({ animate, entropyData, isDarkMode }) {
   );
 }
 
+// --- TÜM ÇIKTILAR MODALI BİLEŞENİ ---
+const AllOutputsModal = ({ isOpen, onClose, entropyData, settings, isDarkMode, accentColor }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-up">
+      <div className={`relative w-full max-w-2xl p-6 rounded-3xl border shadow-2xl flex flex-col max-h-[80vh] ${isDarkMode ? 'bg-[#0A1929] border-[#00FFA3]/30 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <CubeIcon />
+            All Generated Outputs
+          </h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div className="overflow-y-auto pr-2 space-y-2 flex-1">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {entropyData.map((val, idx) => (
+              <div key={idx} className={`p-3 rounded-xl border text-center ${isDarkMode ? 'bg-black/20 border-white/5' : 'bg-gray-50 border-gray-200'} hover:border-[#00FFA3]/50 transition-colors`}>
+                <span className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Byte {idx + 1}</span>
+                <span className={`font-mono font-bold responsive-byte-text ${accentColor}`}>
+                  {settings.format === 'hex' ? val.toString(16).toUpperCase().padStart(2, '0') :
+                   settings.format === 'bin' ? val.toString(2).padStart(8, '0') :
+                   val}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <button onClick={onClose} className={`w-full mt-6 py-3 rounded-xl font-bold transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- GEÇMİŞ ÇIKTILAR (HISTORY) MODALI BİLEŞENİ ---
+const HistoryModal = ({ isOpen, onClose, history, settings, isDarkMode, accentColor }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-up">
+      <div className={`relative w-full max-w-3xl p-6 rounded-3xl border shadow-2xl flex flex-col max-h-[85vh] ${isDarkMode ? 'bg-[#0A1929] border-[#00FFA3]/30 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <ChartIcon />
+            Generation History
+          </h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div className="overflow-y-auto pr-2 space-y-4 flex-1">
+          {history.map((session) => (
+            <div key={session.id} className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+              <div className="flex justify-between items-center mb-3 border-b border-gray-500/30 pb-2">
+                <span className={`text-sm font-bold ${accentColor}`}>Generation #{session.id}</span>
+                <span className="text-xs text-gray-500 font-mono">{session.timestamp}</span>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                {session.data.map((val, idx) => (
+                  <div key={idx} className={`p-2 rounded-lg border text-center ${isDarkMode ? 'bg-black/40 border-white/5' : 'bg-white border-gray-200'}`}>
+                    <span className="block text-[10px] text-gray-500 mb-0.5">B{idx + 1}</span>
+                    <span className={`font-mono font-bold responsive-byte-text ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {settings.format === 'hex' ? val.toString(16).toUpperCase().padStart(2, '0') :
+                       settings.format === 'bin' ? val.toString(2).padStart(8, '0') :
+                       val}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <button onClick={onClose} className={`w-full mt-6 py-3 rounded-xl font-bold transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // --- SİSTEM DURUMU MODALI BİLEŞENİ ---
-const StatusModal = ({ isOpen, onClose, systemStatus, isDarkMode }) => {
+const StatusModal = ({ isOpen, onClose, systemStatus, isDarkMode, lastHealthCheck, errorLogCount }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-up">
@@ -177,7 +244,7 @@ const StatusModal = ({ isOpen, onClose, systemStatus, isDarkMode }) => {
           <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
-        </div>
+        </div> 
         <div className="space-y-4">
           <div className={`flex justify-between items-center p-3 rounded-xl ${isDarkMode ? 'bg-black/20 border border-white/5' : 'bg-gray-50 border border-gray-100'}`}>
             <span className={isDarkMode ? "text-gray-400" : "text-gray-500"}>API Health</span>
@@ -192,6 +259,14 @@ const StatusModal = ({ isOpen, onClose, systemStatus, isDarkMode }) => {
           <div className={`flex justify-between items-center p-3 rounded-xl ${isDarkMode ? 'bg-black/20 border border-white/5' : 'bg-gray-50 border border-gray-100'}`}>
             <span className={isDarkMode ? "text-gray-400" : "text-gray-500"}>Network</span>
             <span className="font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded-md text-xs">Testnet</span>
+          </div>
+          <div className={`flex justify-between items-center p-3 rounded-xl ${isDarkMode ? 'bg-black/20 border border-white/5' : 'bg-gray-50 border border-gray-100'}`}>
+            <span className={isDarkMode ? "text-gray-400" : "text-gray-500"}>Last Sync</span>
+            <span className={`font-mono px-2 py-1 rounded-md text-xs ${isDarkMode ? 'text-white bg-gray-800' : 'text-gray-800 bg-gray-200'}`}>{lastHealthCheck || 'Waiting...'}</span>
+          </div>
+          <div className={`flex justify-between items-center p-3 rounded-xl ${isDarkMode ? 'bg-black/20 border border-white/5' : 'bg-gray-50 border border-gray-100'}`}>
+            <span className={isDarkMode ? "text-gray-400" : "text-gray-500"}>Error Count</span>
+            <span className={`font-bold font-mono px-2 py-1 rounded-md text-xs ${errorLogCount === 0 ? 'bg-[#00FFA3]/10 text-[#00FFA3]' : 'bg-red-500/10 text-red-500'}`}>{errorLogCount}</span>
           </div>
         </div>
         <button onClick={onClose} className={`w-full mt-6 py-3 rounded-xl font-bold transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}>
@@ -218,9 +293,10 @@ const Toast = ({ notification, onClose }) => {
 };
 
 function App() {
-  const isDarkMode = true; // Tema değiştirme özelliği kaldırıldı, varsayılan koyu tema aktif
+  const isDarkMode = true;
   const [walletAddress, setWalletAddress] = useState(null);
   const [entropyData, setEntropyData] = useState([]);
+  const [entropyHistory, setEntropyHistory] = useState([]);
   const [systemStatus, setSystemStatus] = useState({ status: 'Unknown', chaos_system: '-' });
   const [txHash, setTxHash] = useState(null);
   const [blockNumber, setBlockNumber] = useState(null);
@@ -228,17 +304,19 @@ function App() {
   const [notification, setNotification] = useState(null);
   const [stats, setStats] = useState({ totalBytes: 0, generationCount: 0 });
   const [showSettings, setShowSettings] = useState(false);
-  const [settings, setSettings] = useState({ source: 'os_entropy', format: 'dec' });
+  const [settings, setSettings] = useState({ source: 'os_entropy', format: 'dec', byteCount: 18 });
+  const [lastHealthCheck, setLastHealthCheck] = useState(null);
+  const [errorLogCount, setErrorLogCount] = useState(0);
   const [rotationSpeed, setRotationSpeed] = useState(0.5);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showAllOutputs, setShowAllOutputs] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
-  // Toast Gösterici
   const showToast = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
   };
 
-  // İstatistikleri Güncelle
   const updateStats = (byteCount) => {
     setStats(prev => ({
       totalBytes: prev.totalBytes + byteCount,
@@ -246,7 +324,6 @@ function App() {
     }));
   };
 
-  // Cüzdan değişikliklerini dinle
   useEffect(() => {
     if (window.ethereum) {
       const handleAccountsChanged = (accounts) => {
@@ -257,7 +334,6 @@ function App() {
     }
   }, []);
 
-  // Web3 Cüzdan Bağlama Fonksiyonu
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
@@ -272,7 +348,6 @@ function App() {
     }
   };
 
-  // Klavye Kısayolları (Space ile üretim)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.code === 'Space' && !loading && !showSettings && walletAddress) {
@@ -284,10 +359,8 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [loading, showSettings, walletAddress]); 
 
-  // Sayfa kaydırma (scroll) ile 3D dönüş hızını ayarlama
   useEffect(() => {
     const handleScroll = () => {
-      // Temel hız 0.5, aşağı kaydırdıkça artar (çarpanı zevkinize göre değiştirebilirsiniz)
       const newSpeed = 0.5 + (window.scrollY * 0.005);
       setRotationSpeed(newSpeed);
     };
@@ -296,43 +369,37 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Gerçek zamanlı sistem sağlığı kontrolü (Polling)
   useEffect(() => {
     const checkHealth = async () => {
       try {
         const healthData = await EntropyService.getHealth();
         setSystemStatus(healthData);
+        setLastHealthCheck(new Date().toLocaleTimeString());
       } catch (error) {
-        // Hata durumunda sistemi 'PASİF' duruma (kırmızı ışık) geçirir
         setSystemStatus({ status: 'error', chaos_system: '-' });
+        setErrorLogCount(prev => prev + 1);
       }
     };
     
-    checkHealth(); // Sayfa yüklendiğinde ilk kontrol
-    
-    // Her 10 saniyede bir sunucuyu yokla
+    checkHealth();
     const interval = setInterval(checkHealth, 10000);
-    return () => clearInterval(interval); // Bileşen unmount olduğunda temizle
+    return () => clearInterval(interval);
   }, []);
 
-  // Backend'den Veri Çekme (EntropyService Entegrasyonu)
   const handleGenerateEntropy = async () => {
     setLoading(true);
     try {
-      // 18 byte entropi iste
-      const result = await EntropyService.generateEntropy(18);
-      
-      // Backend'den dönen veri yapısını kontrol et
+      const result = await EntropyService.generateEntropy(settings.byteCount);
+
       console.log('Gelen veri:', result);
       
+      let newData = [];
       if (result && result.values) {
-        // { values: [1,2,3...] } formatında geliyor
-        setEntropyData(result.values);
-        updateStats(18);
+        newData = result.values;
+        updateStats(settings.byteCount);
         showToast(`${result.bytes} bytes of entropy generated`, 'success');
       } else if (Array.isArray(result)) {
-        // Direkt dizi olarak geliyor
-        setEntropyData(result);
+        newData = result;
         updateStats(result.length);
         showToast(`${result.length} bytes of entropy generated`, 'success');
       } else {
@@ -340,26 +407,32 @@ function App() {
         showToast('Unexpected data format', 'error');
       }
       
+      if (newData.length > 0) {
+        setEntropyData(newData);
+        setEntropyHistory(prev => [
+          { id: prev.length + 1, data: newData, timestamp: new Date().toLocaleTimeString() },
+          ...prev
+        ]);
+      }
+      
     } catch (error) {
       console.error('Data generation error:', error);
       showToast(`Error: ${error.message}`, 'error');
+      setErrorLogCount(prev => prev + 1);
     } finally {
       setLoading(false);
     }
   };
 
-  // Blokzincire Veri Kaydetme (Transaction)
   const handleSaveToBlockchain = async () => {
     if (!walletAddress) return showToast("Please connect your wallet first.", 'error');
     if (entropyData.length === 0) return showToast("No data found to save.", 'error');
 
     try {
       setLoading(true);
-      // Ethers.js v6 provider (BrowserProvider)
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // Hedef Kontrat
       const contractAddress = "0x0000000000000000000000000000000000000000"; 
       const contractABI = [
         "function recordEntropy(uint8[] memory values) public"
@@ -367,12 +440,10 @@ function App() {
 
       const contract = new Contract(contractAddress, contractABI, signer);
       
-      // Transaction gönderimi
       const tx = await contract.recordEntropy(entropyData);
       setTxHash(tx.hash);
-      setBlockNumber(null); // Yeni işlem için eski numarayı temizle
+      setBlockNumber(null);
       
-      // İşlemin onaylanmasını bekle ve dönen faturadan (receipt) blok numarasını al
       const receipt = await tx.wait();
       if (receipt && receipt.blockNumber) {
         setBlockNumber(receipt.blockNumber);
@@ -386,7 +457,6 @@ function App() {
     }
   };
 
-  // Buton metnini duruma göre belirle
   const getSaveButtonText = () => {
     if (loading) return "Processing...";
     if (!walletAddress) return "Connect Wallet First";
@@ -394,9 +464,8 @@ function App() {
     return "Save to Blockchain";
   };
 
-  // Tema Stilleri
   const themeContainerClass = isDarkMode
-    ? "bg-[#0A1929] text-gray-100"
+    ? "bg-[#050b14] text-gray-100"
     : "bg-[#f8fafc] text-[#1e293b]";
 
   const glassCardClass = isDarkMode
@@ -410,14 +479,14 @@ function App() {
 
   return (
     <div className={`min-h-screen ${themeContainerClass} font-sans selection:bg-[#00FFA3]/30 overflow-x-hidden relative transition-colors duration-500 flex flex-col`}>
-      {/* Arkaplan Efektleri (Ambient Light) */}
+      {/* Arkaplan Efektleri */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#00FFA3]/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#00FFA3]/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-900/10 rounded-full blur-[150px]" />
       </div>
 
-      {/* Navbar / Header */}
-      <nav className={`relative z-50 flex justify-between items-center px-8 py-5 border-b ${isDarkMode ? 'border-white/5 bg-[#0A1929]/80' : 'border-[#e2e8f0] bg-[#ffffff]/80'} backdrop-blur-xl sticky top-0`}>
+      {/* Navbar */}
+      <nav className={`relative z-50 flex justify-between items-center px-8 py-5 border-b ${isDarkMode ? 'border-white/5 bg-[#050b14]/80' : 'border-[#e2e8f0] bg-[#ffffff]/80'} backdrop-blur-xl sticky top-0`}>
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-3 h-3 bg-[#00FFA3] rounded-full animate-pulse shadow-[0_0_10px_#00FFA3]"></div>
@@ -467,15 +536,23 @@ function App() {
       </nav>
 
       <Toast notification={notification} onClose={() => setNotification(null)} />
-      <StatusModal isOpen={showStatusModal} onClose={() => setShowStatusModal(false)} systemStatus={systemStatus} isDarkMode={isDarkMode} />
+      <StatusModal isOpen={showStatusModal} onClose={() => setShowStatusModal(false)} systemStatus={systemStatus} isDarkMode={isDarkMode} lastHealthCheck={lastHealthCheck} errorLogCount={errorLogCount} />
+      <AllOutputsModal isOpen={showAllOutputs} onClose={() => setShowAllOutputs(false)} entropyData={entropyData} settings={settings} isDarkMode={isDarkMode} accentColor={accentColor} />
+      <HistoryModal isOpen={showHistoryModal} onClose={() => setShowHistoryModal(false)} history={entropyHistory} settings={settings} isDarkMode={isDarkMode} accentColor={accentColor} />
+
+      {systemStatus.status === 'error' && (
+        <div className="bg-red-500/10 border-b border-red-500/30 text-red-400 px-4 py-2.5 text-center text-sm font-medium flex items-center justify-center gap-3 backdrop-blur-md z-40 relative">
+          <SpinnerIcon /> API Bağlantısı Bekleniyor (Servise ulaşılamıyor, arka planda yeniden deneniyor)...
+        </div>
+      )}
 
       {/* Main Layout */}
       <main className="relative z-10 container mx-auto p-4 lg:p-6 flex flex-col lg:flex-row gap-6 flex-grow">
         
-        {/* Sidebar: Kontrol Paneli (Sabit Genişlik) */}
+        {/* Sidebar: Kontrol Paneli */}
         <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
           
-          {/* Ayarlar Paneli (Conditional) */}
+          {/* Ayarlar Paneli */}
           {showSettings && (
             <div className={`animate-fade-in-down p-4 rounded-3xl mb-6 border ${isDarkMode ? 'bg-[#0A1929] border-[#00FFA3]/30' : 'bg-[#ffffff] border-[#e2e8f0]'}`}>
               <h3 className={`text-sm font-bold mb-3 ${accentColor} uppercase tracking-wider`}>Settings</h3>
@@ -490,6 +567,15 @@ function App() {
                   </select>
                 </div>
                 <div>
+                  <label className={`block text-xs mb-1 mt-2 ${subTextColor}`}>Byte Count</label>
+                  <input 
+                    type="number" min="1" max="1024"
+                    className={`w-full p-2 rounded-lg text-sm outline-none border ${isDarkMode ? 'bg-[#050b14] border-gray-700 text-gray-300' : 'bg-[#f8fafc] border-[#e2e8f0] text-[#1e293b]'}`}
+                    value={settings.byteCount} 
+                    onChange={(e) => setSettings({...settings, byteCount: parseInt(e.target.value) || 1})}
+                  />
+                </div>
+                <div className="mt-2">
                   <label className={`block text-xs mb-1 ${subTextColor}`}>Output Format</label>
                   <div className="flex gap-2">
                     {['hex', 'dec', 'bin'].map(fmt => (
@@ -555,8 +641,8 @@ function App() {
             )}
           </div>
           
+          {/* Sistem Durumu Kartları */}
           <div className="grid grid-cols-3 gap-2">
-            {/* Sistem Durumu */}
             <div className={`flex flex-col items-center justify-center p-2 ${isDarkMode ? 'bg-[#0A1929]/50 border-gray-800' : 'bg-[#ffffff] border-[#e2e8f0]'} rounded-2xl border hover:border-[#00FFA3]/30 transition-all duration-300 hover:-translate-y-1`}>
               <div className="flex items-center gap-2 mb-2">
                 <div className="relative">
@@ -571,7 +657,6 @@ function App() {
               <span className={`text-xs mt-1 font-medium ${subTextColor}`}>System</span>
             </div>
 
-            {/* Algoritma */}
             <div className={`flex flex-col items-center justify-center p-2 ${isDarkMode ? 'bg-[#0A1929]/50 border-gray-800' : 'bg-[#ffffff] border-[#e2e8f0]'} rounded-2xl border hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1`}>
               <div className="mb-2">
                  <Cpu size={20} className="text-purple-400" />
@@ -582,7 +667,6 @@ function App() {
               <span className={`text-xs mt-1 font-medium ${subTextColor}`}>Algo</span>
             </div>
 
-            {/* Ağ Bilgisi */}
             <div className={`flex flex-col items-center justify-center p-2 ${isDarkMode ? 'bg-[#0A1929]/50 border-gray-800' : 'bg-[#ffffff] border-[#e2e8f0]'} rounded-2xl border hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-1`}>
               <div className="mb-2">
                  <Wifi size={20} className="text-blue-400" />
@@ -595,12 +679,11 @@ function App() {
           </div>
         </aside>
 
-        {/* Main Content: Simülasyon ve İstatistikler */}
+        {/* Main Content */}
         <div className="flex-1 flex flex-col gap-6 min-w-0">
           
           {/* 3D Simülasyon Alanı */}
           <div className="w-full flex flex-col gap-6">
-            {/* Grafik Alanı */}
             <div className={`${glassCardClass} backdrop-blur-xl rounded-3xl min-h-[400px] lg:min-h-[500px] relative flex flex-col shadow-2xl overflow-hidden group transition-colors duration-500`}>
               <div className="absolute top-6 left-6 z-10 flex justify-between items-start w-[calc(100%-3rem)] pointer-events-none">
                 <div className={`backdrop-blur-md px-5 py-2.5 rounded-xl border shadow-lg ${isDarkMode ? 'bg-[#0A1929]/80 border-white/10' : 'bg-[#ffffff]/80 border-[#e2e8f0]'}`}>
@@ -613,7 +696,6 @@ function App() {
               
               <div className="absolute inset-0">
                 <Canvas camera={{ position: [0, -40, 20], fov: 60 }} className={isDarkMode ? '' : 'bg-[#f1f5f9]'}>
-                  {/* Canvas arkaplan rengi yerine üst katmanın şeffaflığını kullanıyoruz */}
                   {isDarkMode && <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />}
                   <ambientLight intensity={isDarkMode ? 0.5 : 1} />
                   <RosslerGraph animate={loading} entropyData={entropyData} isDarkMode={isDarkMode} />
@@ -623,51 +705,80 @@ function App() {
             </div>
           </div>
 
-          {/* Alt Panel: İstatistikler ve Çıktı */}
-          <div className="w-full flex flex-col xl:flex-row gap-6">
-            {/* İstatistikler */}
-            <div className={`w-full xl:w-1/3 flex flex-col p-6 rounded-3xl border ${isDarkMode ? 'bg-[#0A1929]/30 border-gray-800' : 'bg-[#ffffff] border-[#e2e8f0]'}`}>
-               <div className="flex items-center gap-3 mb-6">
-                 <ChartIcon size={20} className={accentColor} />
-                 <span className={`text-sm font-bold uppercase tracking-wider ${subTextColor}`}>Statistics</span>
-               </div>
-               <div className="flex flex-col sm:flex-row xl:flex-col gap-4 flex-1 justify-center">
-                 <div className={`flex-1 flex flex-col items-center justify-center text-center p-6 rounded-2xl ${isDarkMode ? 'bg-[#0A1929]/50' : 'bg-[#f8fafc]'} border ${isDarkMode ? 'border-gray-800' : 'border-[#e2e8f0]'} shadow-sm`}>
-                   <span className={`block text-xs font-medium ${subTextColor} mb-2 uppercase tracking-widest`}>Total Output</span>
-                   <span className={`text-3xl font-mono font-bold ${textColor}`}>{stats.totalBytes} <span className="text-sm font-normal text-gray-500">B</span></span>
-                 </div>
-                 <div className={`flex-1 flex flex-col items-center justify-center text-center p-6 rounded-2xl ${isDarkMode ? 'bg-[#0A1929]/50' : 'bg-[#f8fafc]'} border ${isDarkMode ? 'border-gray-800' : 'border-[#e2e8f0]'} shadow-sm`}>
-                   <span className={`block text-xs font-medium ${subTextColor} mb-2 uppercase tracking-widest`}>Generation Count</span>
-                   <span className={`text-3xl font-mono font-bold ${textColor}`}>{stats.generationCount}</span>
-                 </div>
-               </div>
+          {/* ===== YENİ: İstatistikler ve Çıktı YAN YANA ===== */}
+          <div className="stats-output-row">
+            
+            {/* İstatistikler Kartı */}
+            <div className={`glass-card ${glassCardClass} backdrop-blur-xl rounded-2xl p-5 border ${isDarkMode ? 'border-white/10' : 'border-[#e2e8f0]'} flex flex-col`}>
+              <h3 className={`text-sm font-bold mb-4 flex items-center gap-2 ${textColor}`}>
+                <span className={`w-1.5 h-6 rounded-full ${isDarkMode ? 'bg-[#00FFA3] shadow-[0_0_10px_#00FFA3]' : 'bg-[#0A1929]'}`}></span>
+                Statistics
+              </h3>
+              
+              {/* stats-inner-grid ile 2 sütunlu iç grid */}
+              <div className="stats-inner-grid flex-1">
+                <div className={`${isDarkMode ? 'bg-black/20' : 'bg-[#f8fafc]'} p-4 rounded-xl border ${isDarkMode ? 'border-white/5' : 'border-[#e2e8f0]'} text-center`}>
+                  <span className={`block text-xs ${subTextColor} mb-1 uppercase tracking-wider`}>Total Output</span>
+                  <span className={`text-2xl font-mono font-bold ${textColor}`}>{stats.totalBytes} <span className="text-xs font-normal text-gray-500">B</span></span>
+                </div>
+                <div className={`${isDarkMode ? 'bg-black/20' : 'bg-[#f8fafc]'} p-4 rounded-xl border ${isDarkMode ? 'border-white/5' : 'border-[#e2e8f0]'} text-center`}>
+                  <span className={`block text-xs ${subTextColor} mb-1 uppercase tracking-wider`}>Generation</span>
+                  <span className={`text-2xl font-mono font-bold ${textColor}`}>{stats.generationCount}</span>
+                </div>
+              </div>
+              
+              {entropyHistory.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-800/50 text-center">
+                  <button 
+                    onClick={() => setShowHistoryModal(true)}
+                    className={`w-full text-xs font-bold px-5 py-3 rounded-xl transition-all border shadow-sm ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-700 border-gray-700 text-gray-300 hover:text-[#00FFA3] hover:border-[#00FFA3]/50' : 'bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-600 hover:text-[#0A1929]'}`}
+                  >
+                    View All Outputs
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Çıktı Alanı */}
-            <div className={`w-full xl:w-2/3 glass-card ${glassCardClass} backdrop-blur-xl rounded-3xl p-6 lg:p-8 shadow-2xl transition-colors duration-500 flex flex-col`}>
-              <h3 className={`text-sm font-bold mb-6 ${textColor} border-b ${isDarkMode ? 'border-white/10' : 'border-[#e2e8f0]'} pb-4 flex items-center gap-2`}>
+            {/* Çıktı Kartı */}
+            <div className={`glass-card ${glassCardClass} backdrop-blur-xl rounded-2xl p-5 border ${isDarkMode ? 'border-white/10' : 'border-[#e2e8f0]'}`}>
+              <h3 className={`text-sm font-bold mb-4 flex items-center gap-2 ${textColor}`}>
                 <span className={`w-1.5 h-6 rounded-full ${isDarkMode ? 'bg-[#00FFA3] shadow-[0_0_10px_#00FFA3]' : 'bg-[#0A1929]'}`}></span>
                 Output (Byte Stream)
               </h3>
               
-              <div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-9 gap-3 content-start flex-1">
-                {entropyData.length > 0 ? entropyData.map((val, idx) => (
-                  <div key={idx} className={`${isDarkMode ? 'bg-[#0A1929]/40 border-white/5' : 'bg-[#f8fafc] border-[#e2e8f0]'} border p-3 rounded-2xl text-center animate-fade-in-up hover:border-[#00FFA3]/50 hover:bg-[#00FFA3]/5 transition-all duration-300 group relative overflow-hidden shadow-sm`}>
-                    <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-[#00FFA3]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <span className={`block text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-gray-400'} mb-1.5 uppercase tracking-widest font-bold`}>B-{idx + 1}</span>
-                    <span className={`font-mono ${accentColor} font-bold text-lg ${isDarkMode ? 'group-hover:text-white' : 'group-hover:text-[#0A1929]'} transition-colors text-shadow-glow`}>{
-                      settings.format === 'hex' ? val.toString(16).toUpperCase().padStart(2, '0') :
-                      settings.format === 'bin' ? val.toString(2).padStart(8, '0').substring(0,4) + '..' :
-                      val
-                    }</span>
-                  </div>
-                )) : (
-                  <div className={`col-span-full flex flex-col items-center justify-center py-12 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>
-                    <span className="text-sm font-medium">Waiting for data...</span>
+              {/* output-bytes-grid ile 4 sütunlu byte grid */}
+              <div className="output-bytes-grid">
+                {entropyData.length > 0 ? (
+                  entropyData.slice(0, 8).map((val, idx) => (
+                    <div key={idx} className={`${isDarkMode ? 'bg-black/20' : 'bg-[#f8fafc]'} p-2 rounded-lg text-center border ${isDarkMode ? 'border-white/5' : 'border-[#e2e8f0]'} hover:border-[#00FFA3]/50 transition-all`}>
+                      <span className="block text-[10px] text-gray-500 mb-1">B{idx+1}</span>
+                      <span className={`font-mono ${accentColor} font-bold responsive-byte-text`}>
+                        {settings.format === 'hex' ? val.toString(16).toUpperCase().padStart(2, '0') :
+                         settings.format === 'bin' ? val.toString(2).padStart(8, '0').substring(0,4) + '..' :
+                         val}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-4 text-center py-6 text-gray-500 text-xs">
+                    Waiting for data...
                   </div>
                 )}
               </div>
+              
+              {entropyData.length > 8 && (
+                <div className="mt-4 text-center flex flex-col items-center gap-3">
+                  <span className="text-[10px] text-gray-500">+{entropyData.length - 8} more bytes</span>
+                  <button 
+                    onClick={() => setShowAllOutputs(true)}
+                    className={`text-xs font-bold px-5 py-2.5 rounded-xl transition-all border shadow-sm ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-700 border-gray-700 text-gray-300 hover:text-[#00FFA3] hover:border-[#00FFA3]/50' : 'bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-600 hover:text-[#0A1929]'}`}
+                  >
+                    View Outputs
+                  </button>
+                </div>
+              )}
             </div>
+            
           </div>
         </div>
 

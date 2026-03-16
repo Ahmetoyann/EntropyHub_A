@@ -7,12 +7,12 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="EntropyHub - Decentralized Randomness Beacon"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     
-    <!-- Tailwind CSS CDN - ACİL ÇÖZÜM -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Özel stiller -->
@@ -26,6 +26,14 @@
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         overflow-x: hidden;
+        background-color: #050b14;
+        color: white;
+      }
+      
+      /* Light tema için */
+      body.light-theme {
+        background-color: #f5f7fa;
+        color: #1e293b;
       }
       
       /* Glassmorphism efekti */
@@ -34,6 +42,11 @@
         -webkit-backdrop-filter: blur(12px);
         background-color: rgba(10, 25, 41, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      
+      .light-theme .glass-card {
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.05);
       }
       
       /* 3D Canvas */
@@ -80,17 +93,75 @@
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
       }
       
+      @keyframes ping {
+        75%, 100% {
+          transform: scale(2);
+          opacity: 0;
+        }
+      }
+      
+      .animate-ping {
+        animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+      
       /* Renk değişkenleri */
       :root {
         --primary: #0A1929;
         --accent: #00FFA3;
       }
       
-      /* Özel renk sınıfları (Tailwind yoksa diye) */
+      /* Özel renk sınıfları */
       .bg-\[\#0A1929\] { background-color: #0A1929; }
       .text-\[\#00FFA3\] { color: #00FFA3; }
       .border-\[\#00FFA3\] { border-color: #00FFA3; }
       .bg-\[\#00FFA3\] { background-color: #00FFA3; }
+      .bg-\[\#00FFA3\]\/10 { background-color: rgba(0, 255, 163, 0.1); }
+      .bg-\[\#00FFA3\]\/20 { background-color: rgba(0, 255, 163, 0.2); }
+      
+      /* ===== YENİ EKLENEN STILLER ===== */
+      /* İstatistikler ve Çıktı için yan yana düzen */
+      .stats-output-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;  /* İki eşit sütun */
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      
+      /* İstatistik kartları için iç grid */
+      .stats-inner-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;  /* Toplam Üretim ve Döngü yan yana */
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+      }
+      
+      /* Çıktı grid'i için */
+      .output-bytes-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);  /* 4 sütunlu byte grid'i */
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+      
+      /* Responsive: Mobilde alt alta */
+      @media (max-width: 768px) {
+        .stats-output-row {
+          grid-template-columns: 1fr;  /* Tek sütun */
+        }
+      }
+      
+      /* Ana grid layout */
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;  /* 3 sütun: 25% - 50% - 25% */
+        gap: 1.5rem;
+      }
+      
+      @media (max-width: 1024px) {
+        .main-grid {
+          grid-template-columns: 1fr;  /* Mobilde tek sütun */
+        }
+      }
       
       /* Layout için grid düzenlemeleri */
       .grid { display: grid; }
@@ -98,13 +169,6 @@
       .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      
-      @media (min-width: 1024px) {
-        .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        .lg\:col-span-1 { grid-column: span 1 / span 1; }
-        .lg\:col-span-2 { grid-column: span 2 / span 2; }
-        .lg\:col-span-3 { grid-column: span 3 / span 3; }
-      }
       
       /* Boşluklar */
       .gap-2 { gap: 0.5rem; }
@@ -157,6 +221,7 @@
       .text-lg { font-size: 1.125rem; }
       .text-xl { font-size: 1.25rem; }
       .text-2xl { font-size: 1.5rem; }
+      .text-3xl { font-size: 1.875rem; }
       .font-bold { font-weight: 700; }
       .font-mono { font-family: monospace; }
       .text-center { text-align: center; }
@@ -166,22 +231,32 @@
       .border-t { border-top-width: 1px; }
       .border-b { border-bottom-width: 1px; }
       .border-gray-700 { border-color: #374151; }
+      .border-gray-200 { border-color: #e2e8f0; }
       .border-white\/10 { border-color: rgba(255, 255, 255, 0.1); }
+      .border-white\/5 { border-color: rgba(255, 255, 255, 0.05); }
       
       /* Arkaplan */
       .bg-opacity-10 { --tw-bg-opacity: 0.1; }
       .bg-white { background-color: white; }
+      .bg-white\/10 { background-color: rgba(255, 255, 255, 0.1); }
+      .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05); }
       .bg-black { background-color: black; }
+      .bg-black\/20 { background-color: rgba(0, 0, 0, 0.2); }
       .bg-gray-50 { background-color: #F9FAFB; }
+      .bg-gray-800 { background-color: #1f2937; }
       .bg-red-500 { background-color: #EF4444; }
+      .bg-red-500\/10 { background-color: rgba(239, 68, 68, 0.1); }
+      .bg-yellow-500\/10 { background-color: rgba(245, 158, 11, 0.1); }
       
       /* Renk */
       .text-white { color: white; }
       .text-gray-400 { color: #9CA3AF; }
       .text-gray-500 { color: #6B7280; }
+      .text-gray-300 { color: #d1d5db; }
       .text-yellow-500 { color: #F59E0B; }
       .text-purple-400 { color: #C084FC; }
       .text-blue-400 { color: #60A5FA; }
+      .text-red-400 { color: #f87171; }
       
       /* Yuvarlak kenarlar */
       .rounded { border-radius: 0.25rem; }
@@ -193,6 +268,9 @@
       
       /* Gölge */
       .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+      .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+      .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+      .shadow-\[\#00FFA3\]\/20 { box-shadow: 0 0 20px rgba(0, 255, 163, 0.2); }
       
       /* Overflow */
       .overflow-hidden { overflow: hidden; }
@@ -203,8 +281,11 @@
       .top-4 { top: 1rem; }
       .left-4 { left: 1rem; }
       .right-4 { right: 1rem; }
+      .top-24 { top: 6rem; }
+      .right-8 { right: 2rem; }
       .z-10 { z-index: 10; }
-       
+      .z-50 { z-index: 50; }
+      
       /* Container */
       .container {
         width: 100%;
@@ -213,6 +294,49 @@
         margin-right: auto;
         padding-left: 1rem;
         padding-right: 1rem;
+      }
+      
+      /* Hover efektleri */
+      .hover\:-translate-y-1:hover {
+        transform: translateY(-0.25rem);
+      }
+      
+      .hover\:border-\[\#00FFA3\]\/50:hover {
+        border-color: rgba(0, 255, 163, 0.5);
+      }
+      
+      .hover\:bg-\[\#00FFA3\]\/5:hover {
+        background-color: rgba(0, 255, 163, 0.05);
+      }
+      
+      .transition-all {
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 300ms;
+      }
+      
+      .cursor-default {
+        cursor: default;
+      }
+      
+      .pointer-events-none {
+        pointer-events: none;
+      }
+      
+      /* Backdrop blur */
+      .backdrop-blur-xl {
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+      }
+      
+      .backdrop-blur-md {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+       
+      .backdrop-blur-sm {
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
       }
     </style>
     

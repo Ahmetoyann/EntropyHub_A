@@ -243,8 +243,18 @@ button:disabled {
     opacity: 0;
   }
 }
+ 
+/* Mobil Ekranlar İçin Dinamik Font Boyutu (Çıktı Kutucukları) */
+.responsive-byte-text {
+  /* Min: 9.6px, Hedef: Ekranın %3'ü, Max: 14px (text-sm) */
+  font-size: clamp(0.6rem, 3vw, 0.875rem);
+  word-break: break-all; /* Uzun verilerin kutudan dışarı taşmasını engeller */
+  line-height: 1.2;
+}
 
 /* Eksik Tailwind Sınıfları (eğer Tailwind kullanmıyorsanız) */
+.bg-\[\#050b14\] { background-color: #050b14; }
+.bg-\[\#050b14\]\/80 { background-color: rgba(5, 11, 20, 0.8); }
 .bg-\[\#0A1929\] { background-color: #0A1929; }
 .bg-\[\#0A1929\]\/60 { background-color: rgba(10, 25, 41, 0.6); }
 .bg-\[\#0A1929\]\/80 { background-color: rgba(10, 25, 41, 0.8); }
